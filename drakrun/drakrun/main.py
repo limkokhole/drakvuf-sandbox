@@ -9,7 +9,7 @@ import hashlib
 import socket
 import time
 import zipfile
-from typing import Optional
+from typing import Optional, List
 
 import pefile
 import json
@@ -239,6 +239,23 @@ class DrakrunKarton(Karton):
                 yield RemoteResource(name=res_name, bucket='drakrun', _uid=object_name)
             elif os.path.isdir(file_path):
                 yield from self.upload_artifacts(analysis_uid, workdir, os.path.join(subdir, fn))
+    
+    def get_profile_list(self) -> List[str]:
+        files = os.listdir(os.path.join(LIB_DIR, "profiles"))
+        profiles = [
+            "tcpip_profile", "win32k_profile", "sspicli_profile", "kernel32_profile", "kernelbase_profile", "wow_kernel32_profile",
+            "iphlpapi_profile", "mpr_profile", "ntdll_profile", "ole32_profile", "wow_ole32_profile", "combase_profile",
+            "clr_profile", "mscorwks_profile"
+        ]
+
+        out = []
+
+        for profile in profiles:
+            if f"{profile}.json" in files:
+                out.extend([f"--{profile}", f"{profile}.json"])
+        
+        return out
+
 
     def process(self):
         sample = self.current_task.get_resource("sample")
@@ -345,6 +362,8 @@ class DrakrunKarton(Karton):
                                "--memdump-dir", dump_dir,
                                "-r", kernel_profile,
                                "-e", "D:\\run.bat"]
+                
+                drakvuf_cmd.extend(self.get_profile_list())
 
                 syscall_filter = self.config.config['drakrun'].get('syscall_filter', None)
                 if syscall_filter:
