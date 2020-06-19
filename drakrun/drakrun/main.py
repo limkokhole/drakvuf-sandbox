@@ -239,7 +239,7 @@ class DrakrunKarton(Karton):
                 yield RemoteResource(name=res_name, bucket='drakrun', _uid=object_name)
             elif os.path.isdir(file_path):
                 yield from self.upload_artifacts(analysis_uid, workdir, os.path.join(subdir, fn))
-    
+
     def get_profile_list(self) -> List[str]:
         files = os.listdir(os.path.join(LIB_DIR, "profiles"))
         profiles = [
@@ -253,9 +253,8 @@ class DrakrunKarton(Karton):
         for profile in profiles:
             if f"{profile}.json" in files:
                 out.extend([f"--{profile}", f"{profile}.json"])
-        
-        return out
 
+        return out
 
     def process(self):
         sample = self.current_task.get_resource("sample")
